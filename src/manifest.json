@@ -1,0 +1,20 @@
+{
+	"name": "Multitran with no ads",
+	"short_name": "No ads multitran",
+	"version": "0.0.1",
+	"description": "Remove ads from original multitran page",
+	"icons": {
+		"48": "multitran_no_ads.png"
+	},
+	"content_scripts": [
+		{
+			"matches": [
+				"http://www.multitran.ru/*"
+			],
+			"js": ["contentscript.js"],
+			"run_at": "document_start",
+			"all_frames": false
+		}
+	],
+	"manifest_version": 2
+}
