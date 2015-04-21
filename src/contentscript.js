@@ -9,7 +9,6 @@ var multitran_without_ads = {
 			var style = document.createElement("style");
 			style.innerHTML = "body {display: none;}";
 			(document.head || document.documentElement).appendChild(style);
-
 		};
 
 		document.addEventListener('DOMSubtreeModified', onModifiedDOM, false);
@@ -25,6 +24,8 @@ var multitran_without_ads = {
 				clearInterval(self.timerId);
 				self.processDOM(translationElement.parentNode);
 				document.body.style.display = 'block';
+
+				self.setFocusOnSearchInput();
 			}
 		}, 75);
 	},
@@ -44,6 +45,13 @@ var multitran_without_ads = {
 		}
 
 		document.body.appendChild(tableElement);
+	},
+
+	setFocusOnSearchInput: function() {
+		var searchElement = document.getElementById('s');
+		if(searchElement) {
+			searchElement.focus();
+		}
 	},
 
 	run: function () {
