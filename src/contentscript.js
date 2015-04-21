@@ -1,8 +1,32 @@
 var multitran_without_ads = {
 
-	timerId: null,
+	initialize: function () {
+		this.extension = chrome.extension;
+		this.storage = chrome.storage;
+
+		this.options = {};
+		this.isExtensionControlSet = false;
+
+		this.timerId = null;
+		this.pingDelay = 75;
+	},
+
+	getStoredOptions: function () {
+		var self = this;
+
+		if(self.options = localStorage['options'])
+			self.options = JSON.parse(self.options);
+		else self.options = {};
+
+		if(self.options.isEnabled === undefined) {
+			self.options.isEnabled = true;
+		}
+	},
 
 	injectStyleAsync: function () {
+		if(!this.options.isEnabled) {
+			return;
+		}
 		var onModifiedDOM = function () {
 			document.removeEventListener('DOMSubtreeModified', onModifiedDOM, false);
 
@@ -14,20 +38,28 @@ var multitran_without_ads = {
 		document.addEventListener('DOMSubtreeModified', onModifiedDOM, false);
 	},
 
-	processDOMAsync: function() {
+	processDOMAsync: function () {
 		var self = this;
 
 		self.timerId = setInterval(function () {
+
+			if(!self.options.isEnabled && !self.isExtensionControlSet && document.body) {
+				self.setExtensionControl();
+				clearInterval(self.timerId);
+				return;
+			}
+
 			var translationElement = document.getElementById('translation');
 
 			if (translationElement) {
 				clearInterval(self.timerId);
 				self.processDOM(translationElement.parentNode);
+				self.setExtensionControl();
 				document.body.style.display = 'block';
-
 				self.setFocusOnSearchInput();
 			}
-		}, 75);
+
+		}, self.pingDelay);
 	},
 
 	processDOM: function (tableCeilElement) {
@@ -47,14 +79,39 @@ var multitran_without_ads = {
 		document.body.appendChild(tableElement);
 	},
 
-	setFocusOnSearchInput: function() {
+	setFocusOnSearchInput: function () {
 		var searchElement = document.getElementById('s');
-		if(searchElement) {
+		if (searchElement) {
 			searchElement.focus();
 		}
 	},
 
+	setExtensionControl: function () {
+		var self = this;
+		var extCtrlElement = document.createElement('span');
+		extCtrlElement.id = 'extensionToggleElements';
+		extCtrlElement.innerText = '[' + (self.options.isEnabled ? 'OFF' : 'ON') + ' EXTENSION]';
+		document.body.insertBefore(extCtrlElement, document.body.firstChild);
+
+		extCtrlElement.addEventListener('click', function () {
+
+			self.options = {
+				isEnabled: !self.options.isEnabled
+			};
+			chrome.storage.local.set({
+				options: self.options
+			});
+			localStorage['options'] = JSON.stringify(self.options);
+
+			window.location.reload();
+		});
+
+		self.isExtensionControlSet = true;
+	},
+
 	run: function () {
+		this.initialize();
+		this.getStoredOptions();
 		this.injectStyleAsync();
 		this.processDOMAsync();
 	}

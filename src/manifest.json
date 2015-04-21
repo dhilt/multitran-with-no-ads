@@ -1,7 +1,7 @@
 {
 	"name": "Multitran with no ads",
 	"short_name": "No ads multitran",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Remove ads from original multitran page",
 	"icons": {
 		"48": "multitran_no_ads.png"
@@ -15,6 +15,9 @@
 			"run_at": "document_start",
 			"all_frames": false
 		}
+	],
+	"permissions": [
+		"storage"
 	],
 	"manifest_version": 2
 }
