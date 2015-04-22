@@ -4,7 +4,9 @@
 	"version": "0.0.1",
 	"description": "Remove ads from original multitran page",
 	"icons": {
-		"48": "multitran_no_ads.png"
+		"48": "no-ads-multitran-icon48.png",
+		"64": "no-ads-multitran-icon64.png",
+		"128": "no-ads-multitran-icon128.png"
 	},
 	"content_scripts": [
 		{
