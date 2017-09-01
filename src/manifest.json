@@ -11,7 +11,8 @@
 	"content_scripts": [
 		{
 			"matches": [
-				"http://www.multitran.ru/*"
+        "http://www.multitran.ru/*",
+        "https://www.multitran.ru/*"
 			],
 			"js": ["contentscript.js"],
 			"run_at": "document_start",
