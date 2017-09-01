@@ -1,0 +1,8 @@
+#extensionToggleElements {
+  color: #777777;
+  cursor: pointer;
+}
+
+#extensionToggleElements:hover {
+  color: #770000;
+}

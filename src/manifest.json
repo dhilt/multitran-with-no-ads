@@ -22,5 +22,6 @@
 	"permissions": [
 		"storage"
 	],
+  "web_accessible_resources": ["contentscript.css"],
 	"manifest_version": 2
 }
