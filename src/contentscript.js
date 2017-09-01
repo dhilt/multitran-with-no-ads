@@ -99,7 +99,7 @@ var multitran_without_ads = {
     var self = this;
     var extCtrlElement = document.createElement('span');
     extCtrlElement.id = 'extensionToggleElements';
-    extCtrlElement.innerText = '[Turn ' + (self.options.isEnabled ? 'OFF' : 'ON') + ' no-adds extension]';
+    extCtrlElement.innerText = '[Turn ' + (self.options.isEnabled ? 'OFF' : 'ON') + ' no-ads extension]';
     document.body.insertBefore(extCtrlElement, document.body.firstChild);
 
     extCtrlElement.addEventListener('click', function() {
