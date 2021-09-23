@@ -1,130 +1,137 @@
-var multitran_without_ads = {
+(function () {
 
-  initialize: function() {
-    this.extension = chrome.extension;
-    this.storage = chrome.storage;
+  var LS_TOKEN = 'ads_settings';
+  var PING_DELAY = 75;
 
-    this.options = {};
-    this.isExtensionControlSet = false;
+  var multitran_without_ads = {
 
-    this.timerId = null;
-    this.pingDelay = 75;
-  },
+    initialize: function () {
+      this.extension = chrome.extension;
+      this.storage = chrome.storage;
 
-  getStoredOptions: function() {
-    var self = this;
+      this.options = {};
+      this.isExtensionControlSet = false;
 
-    if (self.options = localStorage['options'])
-      self.options = JSON.parse(self.options);
-    else self.options = {};
+      this.timerId = null;
+      this.pingDelay = PING_DELAY;
+    },
 
-    if (self.options.isEnabled === undefined) {
-      self.options.isEnabled = true;
-    }
-  },
-
-  injectStyleAsync: function() {
-    var self = this;
-
-    var onModifiedDOM = function() {
-      document.removeEventListener('DOMSubtreeModified', onModifiedDOM, false);
-
-      var style = document.createElement('link');
-      style.rel = 'stylesheet';
-      style.type = 'text/css';
-      style.href = self.extension.getURL('contentscript.css');
-      (document.head || document.documentElement).appendChild(style);
-
-      if (!self.options.isEnabled) {
-        return;
+    getStoredOptions: function () {
+      try {
+        this.options = JSON.parse(localStorage[LS_TOKEN]);
+      } catch {
+        this.options = {};
       }
-
-      style = document.createElement('style');
-      style.innerHTML = 'body { display: none }';
-      (document.head || document.documentElement).appendChild(style);
-    };
-
-    document.addEventListener('DOMSubtreeModified', onModifiedDOM, false);
-  },
-
-  processDOMAsync: function() {
-    var self = this;
-
-    self.timerId = setInterval(function() {
-
-      if (!self.options.isEnabled && !self.isExtensionControlSet && document.body) {
-        self.setExtensionControl();
-        clearInterval(self.timerId);
-        return;
+      if (this.options.isEnabled === void 0) {
+        this.options.isEnabled = true;
+        localStorage[LS_TOKEN] = JSON.stringify(this.options);
       }
+    },
 
-      var translationElement = document.getElementById('translation');
+    injectStyleAsync: function () {
+      var self = this;
 
-      if (translationElement) {
-        clearInterval(self.timerId);
-        self.processDOM(translationElement.parentNode);
-        self.setExtensionControl();
-        document.body.style.display = 'block';
-        self.setFocusOnSearchInput();
-      }
+      var onModifiedDOM = function () {
+        document.removeEventListener('DOMSubtreeModified', onModifiedDOM, false);
 
-    }, self.pingDelay);
-  },
+        var style = document.createElement('link');
+        style.rel = 'stylesheet';
+        style.type = 'text/css';
+        style.href = self.extension.getURL('contentscript.css');
+        (document.head || document.documentElement).appendChild(style);
 
-  processDOM: function(tableCeilElement) {
-    var tableElement = document.createElement('table');
-    var tableBodyElement = document.createElement('tbody');
-    var tableRowElement = document.createElement('tr');
+        if (!self.options.isEnabled) {
+          return;
+        }
 
-    tableRowElement.appendChild(tableCeilElement);
-    tableBodyElement.appendChild(tableRowElement);
-    tableElement.appendChild(tableBodyElement);
-
-    var child;
-    while (child = document.body.firstChild) {
-      document.body.removeChild(child);
-    }
-
-    document.body.appendChild(tableElement);
-  },
-
-  setFocusOnSearchInput: function() {
-    var searchElement = document.getElementById('s');
-    if (searchElement) {
-      searchElement.focus();
-    }
-  },
-
-  setExtensionControl: function() {
-    var self = this;
-    var extCtrlElement = document.createElement('span');
-    extCtrlElement.id = 'extensionToggleElements';
-    extCtrlElement.innerText = '[Turn ' + (self.options.isEnabled ? 'OFF' : 'ON') + ' no-ads extension]';
-    document.body.insertBefore(extCtrlElement, document.body.firstChild);
-
-    extCtrlElement.addEventListener('click', function() {
-
-      self.options = {
-        isEnabled: !self.options.isEnabled
+        style = document.createElement('style');
+        style.innerHTML = 'body { display: none }';
+        (document.head || document.documentElement).appendChild(style);
       };
-      chrome.storage.local.set({
-        options: self.options
+
+      document.addEventListener('DOMSubtreeModified', onModifiedDOM, false);
+    },
+
+    processDOMAsync: function () {
+      var self = this;
+
+      self.timerId = setInterval(function () {
+
+        if (!self.options.isEnabled && !self.isExtensionControlSet && document.body) {
+          self.setExtensionControl();
+          clearInterval(self.timerId);
+          return;
+        }
+
+        var translationElement = document.getElementById('translation');
+
+        if (translationElement) {
+          clearInterval(self.timerId);
+          self.processDOM(translationElement.parentNode);
+          self.setExtensionControl();
+          document.body.style.display = 'block';
+          self.setFocusOnSearchInput();
+        }
+
+      }, self.pingDelay);
+    },
+
+    processDOM: function (contentElement) {
+      contentElement.classList = ['no_adds_extractor'];
+
+      var child;
+      while (child = document.body.firstChild) {
+        document.body.removeChild(child);
+      }
+
+      while (child = contentElement.lastChild) {
+        if (child.tagName === 'TABLE') {
+          break;
+        }
+        contentElement.removeChild(child);
+      }
+
+      document.body.appendChild(contentElement);
+    },
+
+    setFocusOnSearchInput: function () {
+      var searchElement = document.getElementById('s');
+      if (searchElement) {
+        searchElement.focus();
+      }
+    },
+
+    setExtensionControl: function () {
+      var self = this;
+      var extCtrlElement = document.createElement('span');
+      extCtrlElement.id = 'extensionToggleElements';
+      extCtrlElement.innerText = '[Turn ' + (self.options.isEnabled ? 'OFF' : 'ON') + ' no-ads extension]';
+      document.body.insertBefore(extCtrlElement, document.body.firstChild);
+
+      extCtrlElement.addEventListener('click', function () {
+
+        self.options = {
+          isEnabled: !self.options.isEnabled
+        };
+        chrome.storage.local.set({
+          options: self.options
+        });
+        localStorage[LS_TOKEN] = JSON.stringify(self.options);
+
+        window.location.reload();
       });
-      localStorage['options'] = JSON.stringify(self.options);
 
-      window.location.reload();
-    });
+      self.isExtensionControlSet = true;
+    },
 
-    self.isExtensionControlSet = true;
-  },
+    run: function () {
+      this.initialize();
+      this.getStoredOptions();
+      this.injectStyleAsync();
+      this.processDOMAsync();
+    }
+  };
 
-  run: function() {
-    this.initialize();
-    this.getStoredOptions();
-    this.injectStyleAsync();
-    this.processDOMAsync();
-  }
-};
+  multitran_without_ads.run();
 
-
-multitran_without_ads.run();
+})();
